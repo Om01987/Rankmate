@@ -1,0 +1,111 @@
+.section-analysis-table-outer {
+  margin: 2rem 0 2.5rem 0;
+  background: rgba(0,0,0,0.15);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 1.5rem 1rem 2rem 1rem;
+}
+.section-analysis-table-title {
+  text-align: center;
+  color: #27e0c2;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.section-analysis-table-main {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 1.1rem;
+}
+.section-analysis-table-main th {
+  background: #27e0c2;
+  color: #fff;
+  font-weight: 800;
+  padding: 1.1rem 0.7rem;
+  text-align: center;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  border: none;
+}
+.section-analysis-table-main td {
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+  font-weight: 600;
+  padding: 1rem 0.7rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.section-analysis-table-main tr:last-child td {
+  border-bottom: none;
+}
+.section-analysis-table-main tr:hover td {
+  background: rgba(39,224,194,0.08);
+}
+.section-analysis-table-total-row td {
+  background: #7b6cf6 !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  border-top: 2px solid #27e0c2;
+}
+@media (max-width: 700px) {
+  .section-analysis-table-main th, .section-analysis-table-main td {
+    font-size: 0.95rem;
+    padding: 0.7rem 0.3rem;
+  }
+  .section-analysis-table-title {
+    font-size: 1.3rem;
+  }
+  .section-analysis-table-outer {
+    padding: 0.5rem 0.2rem 1rem 0.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-analysis-table-outer {
+    margin: 1rem 0 1.5rem 0;
+    padding: 0.5rem 0.1rem 0.75rem 0.1rem;
+  }
+  
+  .section-analysis-table-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .section-analysis-table-main {
+    font-size: 0.8rem;
+  }
+  
+  .section-analysis-table-main th {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.2rem;
+  }
+  
+  .section-analysis-table-main td {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.2rem;
+  }
+  
+  .section-analysis-table-total-row td {
+    font-size: 0.9rem;
+  }
+  
+  /* Make table scrollable on very small screens */
+  .section-analysis-table-main {
+    overflow-x: auto;
+    display: block;
+  }
+  
+  .section-analysis-table-main thead,
+  .section-analysis-table-main tbody {
+    display: table;
+    width: 100%;
+  }
+} 

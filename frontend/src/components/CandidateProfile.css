@@ -1,0 +1,299 @@
+.candidate-profile-container {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 2.5rem;
+  animation: slideIn 0.8s ease-out;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.candidate-profile-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4ecdc4, #44a08d, #093637);
+  border-radius: 20px 20px 0 0;
+}
+
+.candidate-profile-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.candidate-profile-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #4ecdc4, #44a08d);
+  border-radius: 2px;
+}
+
+.candidate-profile-content {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+}
+
+.candidate-profile-photos, .candidate-profile-basic {
+  flex: 1;
+  min-width: 320px;
+  max-width: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.candidate-profile-photos::before, .candidate-profile-basic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4ecdc4, #44a08d);
+  border-radius: 16px 16px 0 0;
+}
+
+.candidate-profile-section-title {
+  color: #4ecdc4;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.candidate-profile-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: #4ecdc4;
+  border-radius: 1px;
+}
+
+/* Style the table inside candidate info */
+.candidate-profile-basic table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.candidate-profile-basic table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.candidate-profile-basic table td:first-child {
+  font-weight: 600;
+  color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.1);
+  width: 40%;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.candidate-profile-basic table td:last-child {
+  font-weight: 500;
+  color: #f8f9fa;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.candidate-profile-basic table tr:last-child td {
+  border-bottom: none;
+}
+
+.candidate-profile-basic table tr:hover td {
+  background: rgba(78, 205, 196, 0.05);
+  transition: background 0.3s ease;
+}
+
+/* Style images in the photos section */
+.candidate-profile-photos img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.candidate-profile-photos img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.candidate-profile-note {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.candidate-profile-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ffc107, #ff9800);
+  border-radius: 12px 12px 0 0;
+}
+
+.candidate-profile-note-title {
+  color: #ffc107;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.candidate-profile-note-content {
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.candidate-profile-note-content p {
+  margin-bottom: 0.8rem;
+}
+
+.candidate-profile-green {
+  color: #4ecdc4;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.candidate-profile-red {
+  color: #ff6b6b;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.candidate-profile-note-list {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.candidate-profile-note-list ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.candidate-profile-note-list li {
+  margin-bottom: 0.8rem;
+  position: relative;
+  padding-left: 1.5rem;
+  color: #f8f9fa;
+  line-height: 1.5;
+}
+
+.candidate-profile-note-list li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4ecdc4;
+  font-weight: bold;
+  font-size: 1.1rem;
+  top: 0;
+}
+
+.candidate-profile-note-list li:last-child:before {
+  color: #ffc107;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .candidate-profile-container {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .candidate-profile-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .candidate-profile-content {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  
+  .candidate-profile-photos, .candidate-profile-basic {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+  
+  .candidate-profile-basic table td {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .candidate-profile-basic table td:first-child {
+    width: 35%;
+  }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+} 
