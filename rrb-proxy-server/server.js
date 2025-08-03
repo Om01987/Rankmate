@@ -52,8 +52,10 @@ app.use(
 );
 
 app.post("/fetch-rrb", async (req, res) => {
-  console.log("Proxy received URL:", req.body.url);
   const { url } = req.body;
+
+  console.log("Proxy received URL:", req.body.url);
+
   if (!url) {
     return res.status(400).json({ error: "No URL provided" });
   }
