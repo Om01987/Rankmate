@@ -11,7 +11,7 @@ app.use(express.json());
 // app.use(
 //   cors({
 //     origin: "http://localhost:3001",
-//     https://rankmate-frontend.onrender.com/ // React dev server
+//     / // React dev server
 //     credentials: false,
 //   })
 // );
@@ -20,7 +20,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3001", // React dev server
-      "https://rankmate-frontend-xxxx.onrender.com", // your deployed frontend URL
+      "https://rankmate-frontend.onrender.com", // your deployed frontend URL
     ],
     credentials: false,
   })
