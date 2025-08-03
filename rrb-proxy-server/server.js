@@ -8,6 +8,12 @@ const PORT = process.env.PORT || 3000;
 
 // Allow JSON bodies & CORS
 app.use(express.json());
+
+const allowedOrigins = [
+  "http://localhost:3001", // React dev server
+  "https://rankmate-frontend.onrender.com", // your deployed frontend URL
+];
+
 // app.use(
 //   cors({
 //     origin: "http://localhost:3001",
@@ -16,13 +22,32 @@ app.use(express.json());
 //   })
 // );
 
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:3001", // React dev server
+//       "https://rankmate-frontend.onrender.com", // your deployed frontend URL
+//     ],
+//     credentials: false,
+//   })
+// );
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3001", // React dev server
-      "https://rankmate-frontend.onrender.com", // your deployed frontend URL
-    ],
+    origin(origin, callback) {
+      // allow requests with no origin like mobile apps or curl
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        // echo back the origin
+        return callback(null, origin);
+      }
+
+      // otherwise block it
+      return callback(new Error("CORS policy: Origin not allowed"), false);
+    },
     credentials: false,
+    optionsSuccessStatus: 200,
   })
 );
 
