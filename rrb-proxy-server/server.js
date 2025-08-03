@@ -139,6 +139,11 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
+// A simple root route
+app.get("/", (req, res) => {
+  res.send("RankMate Proxy Server is running. Use /health or /fetch-rrb.");
+});
+
 app.listen(PORT, () => {
   console.log(`Proxy server running on http://localhost:${PORT}`);
 });
