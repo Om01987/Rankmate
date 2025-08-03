@@ -13,6 +13,8 @@ import SectionAnalysisTable from "./components/SectionAnalysisTable";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+console.log("API_URL at build time:", process.env.REACT_APP_API_URL);
+
 function App() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -567,6 +569,9 @@ function App() {
         const errorData = await res
           .json()
           .catch(() => ({ error: "Unknown error" }));
+
+        console.error("Proxy response errorData:", errorData);
+
         throw new Error(
           `Proxy fetch failed: ${res.status} - ${
             errorData.error || errorData.details || "Unknown error"
