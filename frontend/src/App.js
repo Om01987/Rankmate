@@ -1,86 +1,95 @@
 // src/App.js
-import React, { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import Header from './components/Header';
-import SearchBar from './components/SearchBar';
-import CandidateProfile from './components/CandidateProfile';
-import AnalysisSummary from './components/AnalysisSummary';
-import ErrorMessage from './components/ErrorMessage';
-import AnimatedBackground from './components/AnimatedBackground';
-import QuestionList from './components/QuestionList';
-import ExamSelector from './components/ExamSelector';
-import SectionAnalysisTable from './components/SectionAnalysisTable';
+
+const API_URL = process.env.REACT_APP_API_URL;
+
+import React, { useState, useRef, useEffect } from "react";
+import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import Header from "./components/Header";
+import SearchBar from "./components/SearchBar";
+import CandidateProfile from "./components/CandidateProfile";
+import AnalysisSummary from "./components/AnalysisSummary";
+import ErrorMessage from "./components/ErrorMessage";
+import AnimatedBackground from "./components/AnimatedBackground";
+import QuestionList from "./components/QuestionList";
+import ExamSelector from "./components/ExamSelector";
+import SectionAnalysisTable from "./components/SectionAnalysisTable";
 
 function App() {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [stats, setStats] = useState(null);
-  const [detailsHtml, setDetailsHtml] = useState('');
-  const [candidateInfoHtml, setCandidateInfoHtml] = useState(''); // NEW
-  const [candidateBasicInfo, setCandidateBasicInfo] = useState(''); // NEW - for left column
-  const [candidatePhotos, setCandidatePhotos] = useState(''); // NEW - for right column
+  const [detailsHtml, setDetailsHtml] = useState("");
+  const [candidateInfoHtml, setCandidateInfoHtml] = useState(""); // NEW
+  const [candidateBasicInfo, setCandidateBasicInfo] = useState(""); // NEW - for left column
+  const [candidatePhotos, setCandidatePhotos] = useState(""); // NEW - for right column
   const [sectionedDetails, setSectionedDetails] = useState(null); // NEW
   const [questionDetails, setQuestionDetails] = useState([]); // NEW - for section analysis
   const detailsRef = useRef(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [openSections, setOpenSections] = useState({
     wrong: false,
-    unattempted: false
+    unattempted: false,
   });
-  const [selectedExam, setSelectedExam] = useState('phase13');
-  const [customMarks, setCustomMarks] = useState({ correct: '', wrong: '' });
+  const [selectedExam, setSelectedExam] = useState("phase13");
+  const [customMarks, setCustomMarks] = useState({ correct: "", wrong: "" });
 
   // Function to extract question text from HTML
   const extractQuestionText = (html) => {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    
+    const doc = parser.parseFromString(html, "text/html");
+
     // Try to find question text in various possible elements
     const questionSelectors = [
-      '.qstn-body',
-      '.question',
-      'h3',
-      'h4',
-      'p',
+      ".qstn-body",
+      ".question",
+      "h3",
+      "h4",
+      "p",
       'div[style*="font-weight"]',
       'td[style*="font-weight"]',
-      'td',
-      'div'
+      "td",
+      "div",
     ];
-    
+
     for (const selector of questionSelectors) {
       const elements = doc.querySelectorAll(selector);
       for (const element of elements) {
         const text = element.textContent.trim();
-        if (text && text.length > 30 && 
-            !text.includes('Chosen Option') && 
-            !text.includes('Correct Answer') &&
-            !text.includes('Question Type') &&
-            !text.includes('Question ID') &&
-            !text.match(/^[1-4]\.\s*$/) && // Not just option numbers
-            !text.match(/^[A-D]\.\s*$/) && // Not just option letters
-            !text.includes('✓') &&
-            !text.includes('✗')) {
+        if (
+          text &&
+          text.length > 30 &&
+          !text.includes("Chosen Option") &&
+          !text.includes("Correct Answer") &&
+          !text.includes("Question Type") &&
+          !text.includes("Question ID") &&
+          !text.match(/^[1-4]\.\s*$/) && // Not just option numbers
+          !text.match(/^[A-D]\.\s*$/) && // Not just option letters
+          !text.includes("✓") &&
+          !text.includes("✗")
+        ) {
           return text;
         }
       }
     }
-    
+
     // Fallback: get first meaningful text content
-    const allElements = doc.querySelectorAll('*');
+    const allElements = doc.querySelectorAll("*");
     for (const el of allElements) {
       const text = el.textContent.trim();
-      if (text && text.length > 20 && 
-          !text.includes('Chosen Option') && 
-          !text.includes('Correct Answer') &&
-          !text.includes('Question Type') &&
-          !text.includes('Question ID')) {
+      if (
+        text &&
+        text.length > 20 &&
+        !text.includes("Chosen Option") &&
+        !text.includes("Correct Answer") &&
+        !text.includes("Question Type") &&
+        !text.includes("Question ID")
+      ) {
         return text;
       }
     }
-    
-    return 'Question text not found';
+
+    return "Question text not found";
   };
 
   // Function to extract question text directly from a DOM panel element
@@ -90,83 +99,97 @@ function App() {
     for (const td of questionTds) {
       const text = td.textContent.trim();
       // Check if this td contains question text (not question number, not answer label)
-      if (text && text.length > 10 && 
-          !text.match(/^Q\.\d+$/) && // Not question number like "Q.23"
-          !text.includes('Ans') && // Not answer label
-          !text.match(/^[1-4]\.\s*\d+$/) && // Not option like "1. 224"
-          !text.includes('Chosen Option') && 
-          !text.includes('Correct Answer') &&
-          !text.includes('Question Type') &&
-          !text.includes('Question ID') &&
-          !text.includes('Status') &&
-          !text.includes('Answered') &&
-          !text.includes('Not Answered')) {
+      if (
+        text &&
+        text.length > 10 &&
+        !text.match(/^Q\.\d+$/) && // Not question number like "Q.23"
+        !text.includes("Ans") && // Not answer label
+        !text.match(/^[1-4]\.\s*\d+$/) && // Not option like "1. 224"
+        !text.includes("Chosen Option") &&
+        !text.includes("Correct Answer") &&
+        !text.includes("Question Type") &&
+        !text.includes("Question ID") &&
+        !text.includes("Status") &&
+        !text.includes("Answered") &&
+        !text.includes("Not Answered")
+      ) {
         return text;
       }
     }
-    
+
     // Method 2: Look for td with bold class and text-align left style
-    const leftAlignedTds = panel.querySelectorAll('td.bold[style*="text-align: left"]');
+    const leftAlignedTds = panel.querySelectorAll(
+      'td.bold[style*="text-align: left"]'
+    );
     for (const td of leftAlignedTds) {
       const text = td.textContent.trim();
-      if (text && text.length > 10 && 
-          !text.match(/^Q\.\d+$/) && // Not question number
-          !text.includes('Ans') && // Not answer label
-          !text.match(/^[1-4]\.\s*\d+$/) && // Not option
-          !text.includes('Chosen Option') && 
-          !text.includes('Correct Answer') &&
-          !text.includes('Question Type') &&
-          !text.includes('Question ID') &&
-          !text.includes('Status')) {
+      if (
+        text &&
+        text.length > 10 &&
+        !text.match(/^Q\.\d+$/) && // Not question number
+        !text.includes("Ans") && // Not answer label
+        !text.match(/^[1-4]\.\s*\d+$/) && // Not option
+        !text.includes("Chosen Option") &&
+        !text.includes("Correct Answer") &&
+        !text.includes("Question Type") &&
+        !text.includes("Question ID") &&
+        !text.includes("Status")
+      ) {
         return text;
       }
     }
-    
+
     // Method 3: Find the second td.bold in the question row (question text is usually the second td)
     const questionRow = panel.querySelector('tr:has(td[width="7%"])');
     if (questionRow) {
-      const tds = questionRow.querySelectorAll('td.bold');
+      const tds = questionRow.querySelectorAll("td.bold");
       if (tds.length >= 2) {
         const secondTd = tds[1]; // Second td should be the question text
         const text = secondTd.textContent.trim();
-        if (text && text.length > 10 && 
-            !text.match(/^Q\.\d+$/) && // Not question number
-            !text.includes('Ans') && // Not answer label
-            !text.match(/^[1-4]\.\s*\d+$/) && // Not option
-            !text.includes('Chosen Option') && 
-            !text.includes('Correct Answer') &&
-            !text.includes('Question Type') &&
-            !text.includes('Question ID') &&
-            !text.includes('Status')) {
+        if (
+          text &&
+          text.length > 10 &&
+          !text.match(/^Q\.\d+$/) && // Not question number
+          !text.includes("Ans") && // Not answer label
+          !text.match(/^[1-4]\.\s*\d+$/) && // Not option
+          !text.includes("Chosen Option") &&
+          !text.includes("Correct Answer") &&
+          !text.includes("Question Type") &&
+          !text.includes("Question ID") &&
+          !text.includes("Status")
+        ) {
           return text;
         }
       }
     }
-    
+
     // Method 4: Fallback - search all elements for meaningful text
-    const allElements = panel.querySelectorAll('*');
+    const allElements = panel.querySelectorAll("*");
     for (const el of allElements) {
       const text = el.textContent.trim();
-      if (text && text.length > 20 && 
-          !text.match(/^Q\.\d+$/) && // Not question number
-          !text.includes('Ans') && // Not answer label
-          !text.match(/^[1-4]\.\s*\d+$/) && // Not option
-          !text.includes('Chosen Option') && 
-          !text.includes('Correct Answer') &&
-          !text.includes('Question Type') &&
-          !text.includes('Question ID') &&
-          !text.includes('Status') &&
-          !text.includes('Answered') &&
-          !text.includes('Not Answered') &&
-          !text.includes('Option 1') &&
-          !text.includes('Option 2') &&
-          !text.includes('Option 3') &&
-          !text.includes('Option 4')) {
+      if (
+        text &&
+        text.length > 20 &&
+        !text.match(/^Q\.\d+$/) && // Not question number
+        !text.includes("Ans") && // Not answer label
+        !text.match(/^[1-4]\.\s*\d+$/) && // Not option
+        !text.includes("Chosen Option") &&
+        !text.includes("Correct Answer") &&
+        !text.includes("Question Type") &&
+        !text.includes("Question ID") &&
+        !text.includes("Status") &&
+        !text.includes("Answered") &&
+        !text.includes("Not Answered") &&
+        !text.includes("Option 1") &&
+        !text.includes("Option 2") &&
+        !text.includes("Option 3") &&
+        !text.includes("Option 4")
+      ) {
         return text;
       }
     }
-    
-    return 'Question text not found';
+
+    return "Question text not found";
   };
 
   // Function to copy text to clipboard
@@ -174,15 +197,15 @@ function App() {
     try {
       await navigator.clipboard.writeText(text);
       // You could add a toast notification here
-      console.log('Question copied to clipboard');
+      console.log("Question copied to clipboard");
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
     }
   };
@@ -190,21 +213,23 @@ function App() {
   // Set up global copy function for buttons
   useEffect(() => {
     window.copyQuestionText = (buttonId, questionText) => {
-      console.log('Copying question text:', questionText); // Debug log
+      console.log("Copying question text:", questionText); // Debug log
       copyToClipboard(questionText);
-      
+
       // Visual feedback - change button text temporarily
       const button = document.getElementById(buttonId);
       if (button) {
         const originalText = button.innerHTML;
-        button.innerHTML = '✅ Copied!';
-        button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-        button.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-        
+        button.innerHTML = "✅ Copied!";
+        button.style.background =
+          "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+        button.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
+
         setTimeout(() => {
           button.innerHTML = originalText;
-          button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-          button.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+          button.style.background =
+            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+          button.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.3)";
         }, 2000);
       }
     };
@@ -216,9 +241,9 @@ function App() {
   }, []);
 
   const toggleSection = (section) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -235,11 +260,11 @@ function App() {
   // Remove the removeTechnicalRows function and revert fixImageSrcAndHighlight to only fix image src and highlight rightAns
   function fixImageSrcAndHighlight(html, baseUrl) {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const imgs = doc.querySelectorAll('img');
-    imgs.forEach(img => {
-      const src = img.getAttribute('src');
-      if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+    const doc = parser.parseFromString(html, "text/html");
+    const imgs = doc.querySelectorAll("img");
+    imgs.forEach((img) => {
+      const src = img.getAttribute("src");
+      if (src && !src.startsWith("http") && !src.startsWith("data:")) {
         try {
           img.src = new URL(src, baseUrl).href;
         } catch (e) {
@@ -248,10 +273,12 @@ function App() {
       }
     });
     // --- Block style for menu-tbl positioned at bottom right and clean up rows ---
-    const menuTbls = doc.querySelectorAll('table.menu-tbl');
-    menuTbls.forEach(tbl => {
+    const menuTbls = doc.querySelectorAll("table.menu-tbl");
+    menuTbls.forEach((tbl) => {
       // Override all inline styles and set compact positioning with colorful design
-      tbl.setAttribute('style', `
+      tbl.setAttribute(
+        "style",
+        `
         float: right !important;
         margin: 1rem 0 0.5rem 0 !important;
         display: block !important;
@@ -271,72 +298,77 @@ function App() {
         border-collapse: collapse !important;
         font-family: 'Inter', sans-serif !important;
         backdrop-filter: blur(10px) !important;
-      `);
-      
+      `
+      );
+
       // Fix text breaking in status box - make cells dynamic with better styling
-      const statusCells = tbl.querySelectorAll('td');
-      statusCells.forEach(cell => {
-        cell.style.whiteSpace = 'nowrap !important';
-        cell.style.wordBreak = 'keep-all !important';
-        cell.style.overflow = 'visible !important';
-        cell.style.textOverflow = 'clip !important';
-        cell.style.width = 'auto !important';
-        cell.style.minWidth = 'fit-content !important';
-        cell.style.textAlign = 'left !important';
-        cell.style.padding = '6px 10px 6px 0 !important';
-        cell.style.color = '#ffffff !important';
-        cell.style.border = 'none !important';
-        cell.style.fontSize = '0.95em !important';
-        cell.style.verticalAlign = 'middle !important';
-        cell.style.fontWeight = '700 !important';
-        cell.style.background = 'transparent !important';
-        cell.style.display = 'block !important';
-        cell.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.1) !important';
+      const statusCells = tbl.querySelectorAll("td");
+      statusCells.forEach((cell) => {
+        cell.style.whiteSpace = "nowrap !important";
+        cell.style.wordBreak = "keep-all !important";
+        cell.style.overflow = "visible !important";
+        cell.style.textOverflow = "clip !important";
+        cell.style.width = "auto !important";
+        cell.style.minWidth = "fit-content !important";
+        cell.style.textAlign = "left !important";
+        cell.style.padding = "6px 10px 6px 0 !important";
+        cell.style.color = "#ffffff !important";
+        cell.style.border = "none !important";
+        cell.style.fontSize = "0.95em !important";
+        cell.style.verticalAlign = "middle !important";
+        cell.style.fontWeight = "700 !important";
+        cell.style.background = "transparent !important";
+        cell.style.display = "block !important";
+        cell.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.1) !important";
       });
-      
+
       // Remove unwanted rows FIRST
-      const allRows = Array.from(tbl.querySelectorAll('tr'));
-      allRows.forEach(row => {
-        const firstCell = row.querySelector('td');
+      const allRows = Array.from(tbl.querySelectorAll("tr"));
+      allRows.forEach((row) => {
+        const firstCell = row.querySelector("td");
         if (firstCell) {
           const text = firstCell.textContent.trim().toLowerCase();
           if (
-            text === 'question type :' ||
-            text === 'question id :' ||
-            text.startsWith('option 1 id') ||
-            text.startsWith('option 2 id') ||
-            text.startsWith('option 3 id') ||
-            text.startsWith('option 4 id')
+            text === "question type :" ||
+            text === "question id :" ||
+            text.startsWith("option 1 id") ||
+            text.startsWith("option 2 id") ||
+            text.startsWith("option 3 id") ||
+            text.startsWith("option 4 id")
           ) {
             row.remove();
           }
-          
+
           // Remove "Chosen Option" row if it's "--" or null (unattempted question)
-          if (text.includes('chosen option')) {
-            const nextCell = row.querySelector('td:nth-child(2)');
+          if (text.includes("chosen option")) {
+            const nextCell = row.querySelector("td:nth-child(2)");
             if (nextCell) {
               const chosenValue = nextCell.textContent.trim();
-              if (chosenValue === '--' || chosenValue === '' || chosenValue === 'null') {
+              if (
+                chosenValue === "--" ||
+                chosenValue === "" ||
+                chosenValue === "null"
+              ) {
                 row.remove();
               }
             }
           }
         }
       });
-      
+
       // Convert remaining table to single column layout
-      const remainingRows = Array.from(tbl.querySelectorAll('tr'));
-      remainingRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
+      const remainingRows = Array.from(tbl.querySelectorAll("tr"));
+      remainingRows.forEach((row) => {
+        const cells = row.querySelectorAll("td");
         if (cells.length >= 2) {
           // Combine the text from both cells
           const label = cells[0].textContent.trim();
           const value = cells[1].textContent.trim();
           const combinedText = `${label} ${value}`;
-          
+
           // Clear the row and add single cell
-          row.innerHTML = '';
-          const newCell = document.createElement('td');
+          row.innerHTML = "";
+          const newCell = document.createElement("td");
           newCell.textContent = combinedText;
           newCell.style.cssText = `
             color: #ffffff !important;
@@ -358,9 +390,11 @@ function App() {
     });
     // --- End block style ---
     // Style the question card background (super clean design)
-    const questionPanels = doc.querySelectorAll('.question-pnl');
-    questionPanels.forEach(panel => {
-      panel.setAttribute('style', `
+    const questionPanels = doc.querySelectorAll(".question-pnl");
+    questionPanels.forEach((panel) => {
+      panel.setAttribute(
+        "style",
+        `
         background: #ffffff !important;
         border-radius: 20px !important;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
@@ -372,40 +406,45 @@ function App() {
         position: relative !important;
         font-family: 'Inter', sans-serif !important;
         line-height: 1.6 !important;
-      `);
-      
+      `
+      );
+
       // Clean up all elements within question panel
-      const allEls = panel.querySelectorAll('*');
-      allEls.forEach(el => {
+      const allEls = panel.querySelectorAll("*");
+      allEls.forEach((el) => {
         if (el.style) {
-          el.style.background = 'transparent !important';
-          el.style.backgroundColor = 'transparent !important';
-          el.style.color = '#1a1a1a !important';
-          el.style.fontFamily = 'Inter, sans-serif !important';
+          el.style.background = "transparent !important";
+          el.style.backgroundColor = "transparent !important";
+          el.style.color = "#1a1a1a !important";
+          el.style.fontFamily = "Inter, sans-serif !important";
         }
-        
+
         // Remove all inline background styles
-        if (el.getAttribute('style')) {
-          let style = el.getAttribute('style');
-          style = style.replace(/background[^;]*;/g, '');
-          style = style.replace(/background-color[^;]*;/g, '');
-          style = style.replace(/color[^;]*;/g, '');
-          el.setAttribute('style', style + '; color: #1a1a1a !important; background: transparent !important;');
+        if (el.getAttribute("style")) {
+          let style = el.getAttribute("style");
+          style = style.replace(/background[^;]*;/g, "");
+          style = style.replace(/background-color[^;]*;/g, "");
+          style = style.replace(/color[^;]*;/g, "");
+          el.setAttribute(
+            "style",
+            style +
+              "; color: #1a1a1a !important; background: transparent !important;"
+          );
         }
       });
     });
     // Find the chosen option number from the panel FIRST - SIMPLER METHOD
     let chosenNum = null;
-    
+
     // Search for "Chosen Option" text anywhere in the document
     const allText = doc.body.textContent;
-    
+
     // Look for "Chosen Option : X" pattern
     const chosenMatch = allText.match(/Chosen Option\s*:\s*(\d+)/i);
     if (chosenMatch) {
       chosenNum = chosenMatch[1];
     }
-    
+
     // If not found, try alternative patterns
     if (!chosenNum) {
       const altMatch = allText.match(/Chosen Option\s+(\d+)/i);
@@ -413,57 +452,64 @@ function App() {
         chosenNum = altMatch[1];
       }
     }
-    
+
     // Make all options super clean and readable - PRESERVE IMAGES
-    const allOptions = doc.querySelectorAll('.rightAns, .wrngAns');
+    const allOptions = doc.querySelectorAll(".rightAns, .wrngAns");
     allOptions.forEach((el, idx) => {
       // Extract option number from original text FIRST
       const originalText = el.textContent;
       const optionMatch = originalText.match(/^(\d+)\./);
-      const originalOptionNumber = optionMatch ? optionMatch[1] : (idx + 1).toString();
-      
+      const originalOptionNumber = optionMatch
+        ? optionMatch[1]
+        : (idx + 1).toString();
+
       // PRESERVE IMAGES - Get the original HTML content instead of just text
       const originalHTML = el.innerHTML;
-      
+
       // Clean the content but preserve images
       let cleanContent = originalHTML
-        .replace(/^\d+\.\s*/, '') // Remove original number-dot pattern first
-        .replace(/[✓✗❌✅×]/g, '') // Remove all check/cross symbols
-        .replace(/^\s*[✗✓❌✅×]\s*/, '') // Remove leading symbols
-        .replace(/^\s*[Xx]\s*/, '') // Remove leading X
-        .replace(/\s*[Xx]\s*$/, '') // Remove trailing X
-        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .replace(/^\d+\.\s*/, "") // Remove original number-dot pattern first
+        .replace(/[✓✗❌✅×]/g, "") // Remove all check/cross symbols
+        .replace(/^\s*[✗✓❌✅×]\s*/, "") // Remove leading symbols
+        .replace(/^\s*[Xx]\s*/, "") // Remove leading X
+        .replace(/\s*[Xx]\s*$/, "") // Remove trailing X
+        .replace(/\s+/g, " ") // Replace multiple spaces with single space
         .trim(); // Remove extra spaces
-      
+
       // Use the original option number for matching and display
       const formattedContent = `${originalOptionNumber}. ${cleanContent}`;
-      
+
       // Determine if correct, wrong, or neutral
-      let isCorrect = el.classList.contains('rightAns');
-      let isWrong = el.classList.contains('wrngAns');
-      
+      let isCorrect = el.classList.contains("rightAns");
+      let isWrong = el.classList.contains("wrngAns");
+
       // Check if this is the user's chosen wrong answer
-      let isChosenWrongAnswer = isWrong && chosenNum && originalOptionNumber === chosenNum;
-      
+      let isChosenWrongAnswer =
+        isWrong && chosenNum && originalOptionNumber === chosenNum;
+
       let bg = isCorrect
-        ? '#f0fdf4'  // Green for correct
+        ? "#f0fdf4" // Green for correct
         : isChosenWrongAnswer
-        ? '#fef2f2'  // Red for chosen wrong answer
-        : '#f9fafb'; // Neutral for other wrong answers
+        ? "#fef2f2" // Red for chosen wrong answer
+        : "#f9fafb"; // Neutral for other wrong answers
       let border = isCorrect
-        ? '2px solid #22c55e'
+        ? "2px solid #22c55e"
         : isChosenWrongAnswer
-        ? '2px solid #ef4444'
-        : '2px solid #e5e7eb';
+        ? "2px solid #ef4444"
+        : "2px solid #e5e7eb";
       let color = isCorrect
-        ? '#166534'
+        ? "#166534"
         : isChosenWrongAnswer
-        ? '#7f1d1d'
-        : '#374151';
+        ? "#7f1d1d"
+        : "#374151";
       let fontWeight = isCorrect ? 600 : isChosenWrongAnswer ? 600 : 500;
-      let icon = isCorrect ? '✓' : isChosenWrongAnswer ? '✗' : '';
-      let iconColor = isCorrect ? '#22c55e' : isChosenWrongAnswer ? '#ef4444' : '#6b7280';
-      
+      let icon = isCorrect ? "✓" : isChosenWrongAnswer ? "✗" : "";
+      let iconColor = isCorrect
+        ? "#22c55e"
+        : isChosenWrongAnswer
+        ? "#ef4444"
+        : "#6b7280";
+
       el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;width:auto;max-width:100%;background:${bg};border:${border};color:${color};padding:12px 16px;border-radius:12px;font-weight:${fontWeight};margin:8px 0;box-shadow:0 2px 8px rgba(0,0,0,0.04);font-size:1rem;text-align:left;transition:all 0.3s ease;font-family:'Inter',sans-serif;word-wrap:break-word;overflow-wrap:break-word;">
         <span style="line-height:1.4;flex:1;min-width:0;">${formattedContent}</span>
         <span style="font-size:1.2rem;color:${iconColor};font-weight:bold;margin-left:12px;flex-shrink:0;">${icon}</span>
@@ -494,108 +540,120 @@ function App() {
 
   async function handleInspect() {
     if (!url.trim()) {
-      setError('Please paste a valid URL');
+      setError("Please paste a valid URL");
       return;
     }
 
     if (!isValidUrl(url.trim())) {
-      setError('Please enter a valid URL (e.g., https://example.com)');
+      setError("Please enter a valid URL (e.g., https://example.com)");
       return;
     }
 
-    setError('');
+    setError("");
     setLoading(true);
     setStats(null);
-    setDetailsHtml('');
+    setDetailsHtml("");
 
     try {
       // POST to proxy with URL in body, omit cookies and referrer
-      const res = await fetch('http://localhost:3001/fetch-rrb', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/fetch-rrb`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim() }),
-        credentials: 'omit',
-        referrerPolicy: 'no-referrer',
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(`Proxy fetch failed: ${res.status} - ${errorData.error || errorData.details || 'Unknown error'}`);
+        const errorData = await res
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          `Proxy fetch failed: ${res.status} - ${
+            errorData.error || errorData.details || "Unknown error"
+          }`
+        );
       }
 
       const htmlText = await res.text();
-      
+
       const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlText, 'text/html');
-      
+      const doc = parser.parseFromString(htmlText, "text/html");
+
       // Extract candidate info from .main-info-pnl
-      const infoPanel = doc.querySelector('.main-info-pnl');
-      let infoHtml = '';
-      let basicInfoHtml = '';
-      let photosHtml = '';
-      
+      const infoPanel = doc.querySelector(".main-info-pnl");
+      let infoHtml = "";
+      let basicInfoHtml = "";
+      let photosHtml = "";
+
       if (infoPanel) {
         // Fix image src if needed
-        const imgs = infoPanel.querySelectorAll('img');
-        imgs.forEach(img => {
-          const src = img.getAttribute('src');
-          if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+        const imgs = infoPanel.querySelectorAll("img");
+        imgs.forEach((img) => {
+          const src = img.getAttribute("src");
+          if (src && !src.startsWith("http") && !src.startsWith("data:")) {
             try {
               img.src = new URL(src, url.trim()).href;
             } catch (e) {}
           }
         });
-        
+
         // Clone the panel for splitting
         const clonedPanel = infoPanel.cloneNode(true);
-        
+
         // Extract basic info (text content) - remove photograph rows
         const basicInfoPanel = clonedPanel.cloneNode(true);
-        const photoElements = basicInfoPanel.querySelectorAll('img');
-        photoElements.forEach(img => img.remove());
-        
+        const photoElements = basicInfoPanel.querySelectorAll("img");
+        photoElements.forEach((img) => img.remove());
+
         // Remove photograph rows and note section from table
-        const tableRows = basicInfoPanel.querySelectorAll('tr');
-        tableRows.forEach(row => {
-          const cells = row.querySelectorAll('td');
-          cells.forEach(cell => {
+        const tableRows = basicInfoPanel.querySelectorAll("tr");
+        tableRows.forEach((row) => {
+          const cells = row.querySelectorAll("td");
+          cells.forEach((cell) => {
             const text = cell.textContent.trim().toLowerCase();
-            if (text.includes('photograph') || text.includes('photo') || text.includes('note')) {
+            if (
+              text.includes("photograph") ||
+              text.includes("photo") ||
+              text.includes("note")
+            ) {
               row.remove();
             }
           });
         });
-        
+
         // Also remove any note sections from the HTML
-        const noteElements = basicInfoPanel.querySelectorAll('*');
-        noteElements.forEach(element => {
-          const text = element.textContent?.trim().toLowerCase() || '';
-          if (text.includes('correct answer will carry') || 
-              text.includes('incorrect answer will carry') ||
-              text.includes('chosen option') ||
-              text.includes('options shown in green')) {
+        const noteElements = basicInfoPanel.querySelectorAll("*");
+        noteElements.forEach((element) => {
+          const text = element.textContent?.trim().toLowerCase() || "";
+          if (
+            text.includes("correct answer will carry") ||
+            text.includes("incorrect answer will carry") ||
+            text.includes("chosen option") ||
+            text.includes("options shown in green")
+          ) {
             element.remove();
           }
         });
-        
+
         basicInfoHtml = basicInfoPanel.outerHTML;
-        
+
         // Extract photos only
-        const photosPanel = document.createElement('div');
-        photosPanel.className = 'main-info-pnl';
-        const photoImgs = infoPanel.querySelectorAll('img');
-        
+        const photosPanel = document.createElement("div");
+        photosPanel.className = "main-info-pnl";
+        const photoImgs = infoPanel.querySelectorAll("img");
+
         if (photoImgs.length > 0) {
-          photoImgs.forEach(img => {
+          photoImgs.forEach((img) => {
             const imgClone = img.cloneNode(true);
-            const imgContainer = document.createElement('div');
-            imgContainer.style.cssText = 'margin: 1rem 0; text-align: center;';
+            const imgContainer = document.createElement("div");
+            imgContainer.style.cssText = "margin: 1rem 0; text-align: center;";
             imgContainer.appendChild(imgClone);
             photosPanel.appendChild(imgContainer);
           });
         } else {
           // Add "No photograph available" message with person icon
-          const noPhotoDiv = document.createElement('div');
+          const noPhotoDiv = document.createElement("div");
           noPhotoDiv.style.cssText = `
             text-align: center;
             padding: 3rem 2rem;
@@ -637,71 +695,76 @@ function App() {
           `;
           photosPanel.appendChild(noPhotoDiv);
         }
-        
+
         photosHtml = photosPanel.outerHTML;
-        
+
         infoHtml = infoPanel.outerHTML;
       }
-      
+
       setCandidateInfoHtml(infoHtml);
       setCandidateBasicInfo(basicInfoHtml);
       setCandidatePhotos(photosHtml);
 
       // Robust section mapping: iterate all elements in DOM order (not just direct children)
       let questionToSection = [];
-      let currentSection = 'Section';
+      let currentSection = "Section";
       let detectedSections = [];
-      const allElements = Array.from(doc.querySelectorAll('body *'));
-      allElements.forEach(el => {
-        if (el.classList.contains('section-lbl')) {
+      const allElements = Array.from(doc.querySelectorAll("body *"));
+      allElements.forEach((el) => {
+        if (el.classList.contains("section-lbl")) {
           // Extract section name from the bold span
-          const boldSpan = el.querySelector('span.bold');
-          let sectionName = 'Section';
+          const boldSpan = el.querySelector("span.bold");
+          let sectionName = "Section";
           if (boldSpan) {
             sectionName = boldSpan.textContent.trim();
           } else {
             // Fallback: extract from text content, removing "Section :" prefix
             const fullText = el.textContent.trim();
-            sectionName = fullText.replace(/^Section\s*:\s*/, '').trim();
+            sectionName = fullText.replace(/^Section\s*:\s*/, "").trim();
           }
           currentSection = sectionName;
           detectedSections.push(sectionName);
-        } else if (el.classList.contains('question-pnl')) {
+        } else if (el.classList.contains("question-pnl")) {
           questionToSection.push(currentSection);
         }
       });
       // Debug: Log all detected section names
-      console.log('Detected sections:', detectedSections);
+      console.log("Detected sections:", detectedSections);
 
       // Find all question panels - this is the exact structure from RRB response sheet
-      const panels = Array.from(doc.querySelectorAll('.question-pnl'));
+      const panels = Array.from(doc.querySelectorAll(".question-pnl"));
 
       // Calculate correct, wrong, unattempted
-      let match = 0, wrong = 0, nil = 0;
+      let match = 0,
+        wrong = 0,
+        nil = 0;
       const questionDetailsArray = [];
 
       panels.forEach((panel, index) => {
-        let chosen = '--';
-        let correct = 'N/A';
-        let questionText = '';
+        let chosen = "--";
+        let correct = "N/A";
+        let questionText = "";
 
         // Extract chosen option from the menu table
         const chosenRow = panel.querySelector('td[align="right"]');
-        if (chosenRow && chosenRow.textContent.includes('Chosen Option')) {
+        if (chosenRow && chosenRow.textContent.includes("Chosen Option")) {
           const nextTd = chosenRow.nextElementSibling;
-          if (nextTd && nextTd.classList.contains('bold')) {
+          if (nextTd && nextTd.classList.contains("bold")) {
             chosen = nextTd.textContent.trim();
           }
         }
 
         // Alternative method: search for the exact pattern
-        if (chosen === '--') {
-          const allTds = panel.querySelectorAll('td');
+        if (chosen === "--") {
+          const allTds = panel.querySelectorAll("td");
           for (let i = 0; i < allTds.length - 1; i++) {
             const td = allTds[i];
-            if (td.textContent.includes('Chosen Option') && td.getAttribute('align') === 'right') {
+            if (
+              td.textContent.includes("Chosen Option") &&
+              td.getAttribute("align") === "right"
+            ) {
               const nextTd = allTds[i + 1];
-              if (nextTd && nextTd.classList.contains('bold')) {
+              if (nextTd && nextTd.classList.contains("bold")) {
                 chosen = nextTd.textContent.trim();
                 break;
               }
@@ -710,7 +773,7 @@ function App() {
         }
 
         // Extract correct answer - look for elements with class "rightAns"
-        const rightAnsElements = panel.querySelectorAll('.rightAns');
+        const rightAnsElements = panel.querySelectorAll(".rightAns");
         if (rightAnsElements.length > 0) {
           // Get the text content and extract the option number
           const rightAnsText = rightAnsElements[0].textContent.trim();
@@ -728,46 +791,61 @@ function App() {
         }
 
         // Extract question text for debugging
-        const questionEl = panel.querySelector('.qstn-body, .question, h3, h4');
+        const questionEl = panel.querySelector(".qstn-body, .question, h3, h4");
         if (questionEl) {
-          questionText = questionEl.textContent || questionEl.innerText || '';
+          questionText = questionEl.textContent || questionEl.innerText || "";
         }
 
         questionDetailsArray.push({
           index: index + 1,
           chosen,
           correct,
-          questionText: questionText.substring(0, 50) + '...',
-          section: questionToSection[index] || 'Section'
+          questionText: questionText.substring(0, 50) + "...",
+          section: questionToSection[index] || "Section",
         });
 
-        if (chosen === '--') nil++;
+        if (chosen === "--") nil++;
         else if (chosen === correct) match++;
         else wrong++;
       });
       // Debug: Log each question's mapping
       questionDetailsArray.forEach((q, index) => {
-        console.log(`Q${index + 1}: Section = ${q.section}, Chosen = ${q.chosen}, Correct = ${q.correct}, Text = ${q.questionText}`);
+        console.log(
+          `Q${index + 1}: Section = ${q.section}, Chosen = ${
+            q.chosen
+          }, Correct = ${q.correct}, Text = ${q.questionText}`
+        );
       });
 
       if (panels.length === 0) {
-        throw new Error('No questions found—check your URL or sheet format. Try a different RRB response sheet URL.');
+        throw new Error(
+          "No questions found—check your URL or sheet format. Try a different RRB response sheet URL."
+        );
       }
 
       // Determine marking scheme
-      let correctMark = 1, wrongMark = -1/3;
-      if (selectedExam === 'phase13') { correctMark = 2; wrongMark = -0.5; }
-      else if (selectedExam === 'cgl') { correctMark = 2; wrongMark = -0.25; }
-      else if (selectedExam === 'ntpc') { correctMark = 3; wrongMark = -1; }
-      else if (selectedExam === 'chsl') { correctMark = 2; wrongMark = -0.5; }
-      else if (selectedExam === 'others') {
+      let correctMark = 1,
+        wrongMark = -1 / 3;
+      if (selectedExam === "phase13") {
+        correctMark = 2;
+        wrongMark = -0.5;
+      } else if (selectedExam === "cgl") {
+        correctMark = 2;
+        wrongMark = -0.25;
+      } else if (selectedExam === "ntpc") {
+        correctMark = 3;
+        wrongMark = -1;
+      } else if (selectedExam === "chsl") {
+        correctMark = 2;
+        wrongMark = -0.5;
+      } else if (selectedExam === "others") {
         correctMark = parseFloat(customMarks.correct) || 0;
         wrongMark = parseFloat(customMarks.wrong) || 0;
       }
 
       // Restore calculation for total and marks after removing highlight code
       const total = panels.length;
-      const marks = (match * correctMark) + (wrong * wrongMark);
+      const marks = match * correctMark + wrong * wrongMark;
 
       // Build sectioned wrong/unattempted questions
       // Remove all code that references or uses 'sections', 'sectionedWrong', and 'sectionedUnattempted'.
@@ -779,19 +857,30 @@ function App() {
       const wrongQuestions = panels
         .filter((panel, index) => {
           const detail = questionDetailsArray[index];
-          const isWrong = detail && detail.chosen !== detail.correct && detail.chosen !== '--';
+          const isWrong =
+            detail &&
+            detail.chosen !== detail.correct &&
+            detail.chosen !== "--";
           return isWrong;
         })
         .map((panel, index) => {
           // Extract question text from the original panel BEFORE processing
           const questionText = extractQuestionTextFromPanel(panel);
           console.log(`Wrong question ${index + 1} text:`, questionText); // Debug log
-          console.log(`Wrong question ${index + 1} HTML:`, panel.outerHTML.substring(0, 500)); // Debug HTML
+          console.log(
+            `Wrong question ${index + 1} HTML:`,
+            panel.outerHTML.substring(0, 500)
+          ); // Debug HTML
           const questionId = `wrong-${index}`;
           // Show the full original HTML of the question panel, fixing image src and highlighting rightAns
           return `<div style='background:#f6fff9;border:1.5px solid #b6f7c1;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(40,167,69,0.06);display:flex;flex-direction:column;align-items:flex-start;position:relative;' class="mobile-question-card">
             <button 
-              onclick="window.copyQuestionText('${questionId}', \`${questionText.replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r')}\`)"
+              onclick="window.copyQuestionText('${questionId}', \`${questionText
+            .replace(/`/g, "\\`")
+            .replace(/\$/g, "\\$")
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, "\\n")
+            .replace(/\r/g, "\\r")}\`)"
               id="${questionId}"
               style="
                 position: absolute;
@@ -826,24 +915,32 @@ function App() {
             ${fixImageSrcAndHighlight(panel.outerHTML, url.trim())}
           </div>`;
         })
-        .join('');
+        .join("");
 
       const unattemptedQuestions = panels
         .filter((panel, index) => {
           const detail = questionDetailsArray[index];
-          const isUnattempted = detail && detail.chosen === '--';
+          const isUnattempted = detail && detail.chosen === "--";
           return isUnattempted;
         })
         .map((panel, index) => {
           // Extract question text from the original panel BEFORE processing
           const questionText = extractQuestionTextFromPanel(panel);
           console.log(`Unattempted question ${index + 1} text:`, questionText); // Debug log
-          console.log(`Unattempted question ${index + 1} HTML:`, panel.outerHTML.substring(0, 500)); // Debug HTML
+          console.log(
+            `Unattempted question ${index + 1} HTML:`,
+            panel.outerHTML.substring(0, 500)
+          ); // Debug HTML
           const questionId = `unattempted-${index}`;
           // Show the full original HTML of the question panel, fixing image src and highlighting rightAns
           return `<div style='background:#f6fff9;border:1.5px solid #b6f7c1;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(40,167,69,0.06);display:flex;flex-direction:column;align-items:flex-start;position:relative;' class="mobile-question-card">
             <button 
-              onclick="window.copyQuestionText('${questionId}', \`${questionText.replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r')}\`)"
+              onclick="window.copyQuestionText('${questionId}', \`${questionText
+            .replace(/`/g, "\\`")
+            .replace(/\$/g, "\\$")
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, "\\n")
+            .replace(/\r/g, "\\r")}\`)"
               id="${questionId}"
               style="
                 position: absolute;
@@ -878,34 +975,35 @@ function App() {
             ${fixImageSrcAndHighlight(panel.outerHTML, url.trim())}
           </div>`;
         })
-        .join('');
+        .join("");
 
       setStats({ total, match, wrong, nil, marks: marks.toFixed(2) });
       setDetailsHtml({ wrongQuestions, unattemptedQuestions });
-
     } catch (e) {
       setError(e.message);
-      console.error('Error details:', e);
+      console.error("Error details:", e);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: '#000000',
-      padding: '1rem', 
-      fontFamily: 'Inter, "Segoe UI", Arial, sans-serif',
-      position: 'relative',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'flex-start',
-      overflow: 'hidden'
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#000000",
+        padding: "1rem",
+        fontFamily: 'Inter, "Segoe UI", Arial, sans-serif',
+        position: "relative",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        overflow: "hidden",
+      }}
+    >
       {/* Animated Background Elements */}
       <AnimatedBackground />
-      
+
       <style>{`
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -1057,14 +1155,17 @@ function App() {
           100% { transform: translateX(100vw); }
         }
       `}</style>
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '0 auto', 
-        position: 'relative',
-        width: '100%',
-        boxSizing: 'border-box',
-        zIndex: 10
-      }} className="mobile-container">
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          position: "relative",
+          width: "100%",
+          boxSizing: "border-box",
+          zIndex: 10,
+        }}
+        className="mobile-container"
+      >
         <Header />
         <div className="top-bar-row">
           <SearchBar
@@ -1082,9 +1183,7 @@ function App() {
             setCustomMarks={setCustomMarks}
           />
         </div>
-        {error && (
-          <ErrorMessage error={error} />
-        )}
+        {error && <ErrorMessage error={error} />}
         {candidateBasicInfo && (
           <CandidateProfile
             candidateInfoHtml={candidateInfoHtml}
