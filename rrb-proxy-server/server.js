@@ -61,6 +61,7 @@ app.post("/fetch-rrb", async (req, res) => {
   try {
     // Add headers to mimic a real browser request
     const response = await fetch(url, {
+      method: "GET",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -71,7 +72,9 @@ app.post("/fetch-rrb", async (req, res) => {
         Connection: "keep-alive",
         "Upgrade-Insecure-Requests": "1",
       },
-      timeout: 10000, // 10 second timeout
+      redirect: "follow", // explicitly follow redirects (301, 302, 307 etc)
+      follow: 20, // maximum number of redirects to follow
+      timeout: 20000, // increase timeout to 20 seconds
     });
 
     if (!response.ok) {
@@ -98,7 +101,19 @@ app.post("/proxy-image", async (req, res) => {
       return res.status(400).json({ error: "Image URL is required" });
     }
 
+    // const response = await fetch(url, {
+    //   headers: {
+    //     "User-Agent":
+    //       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    //     Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
+    //     "Accept-Language": "en-US,en;q=0.5",
+    //     Connection: "keep-alive",
+    //   },
+    //   timeout: 8000, // 8 second timeout for images
+    // });
+
     const response = await fetch(url, {
+      method: "GET",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -106,7 +121,9 @@ app.post("/proxy-image", async (req, res) => {
         "Accept-Language": "en-US,en;q=0.5",
         Connection: "keep-alive",
       },
-      timeout: 8000, // 8 second timeout for images
+      redirect: "follow", // follow redirects
+      follow: 20,
+      timeout: 15000, // increase timeout since images may be slower
     });
 
     if (!response.ok) {
