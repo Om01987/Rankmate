@@ -8,10 +8,20 @@ const PORT = process.env.PORT || 3000;
 
 // Allow JSON bodies & CORS
 app.use(express.json());
+// app.use(
+//   cors({
+//     origin: "http://localhost:3001",
+//     https://rankmate-frontend.onrender.com/ // React dev server
+//     credentials: false,
+//   })
+// );
+
 app.use(
   cors({
-    origin: "http://localhost:3001",
-    https://rankmate-frontend.onrender.com/ // React dev server
+    origin: [
+      "http://localhost:3001", // React dev server
+      "https://rankmate-frontend-xxxx.onrender.com", // your deployed frontend URL
+    ],
     credentials: false,
   })
 );
