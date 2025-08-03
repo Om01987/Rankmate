@@ -1,7 +1,4 @@
 // src/App.js
-
-const API_URL = process.env.REACT_APP_API_URL;
-
 import React, { useState, useRef, useEffect } from "react";
 import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import Header from "./components/Header";
@@ -13,6 +10,8 @@ import AnimatedBackground from "./components/AnimatedBackground";
 import QuestionList from "./components/QuestionList";
 import ExamSelector from "./components/ExamSelector";
 import SectionAnalysisTable from "./components/SectionAnalysisTable";
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 function App() {
   const [url, setUrl] = useState("");
